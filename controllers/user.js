@@ -21,7 +21,7 @@ exports.verifyToken = function(req, res) {
   const { _id, email, username } = req.user;
   res.json({
     success: true,
-    message: 'Successfully fetched all users',
+    message: 'Token is valid',
     user: {
       id: _id,
       email,
@@ -30,34 +30,53 @@ exports.verifyToken = function(req, res) {
   });
 }
 
-exports.signup = function(req, res) {
-  const { _id, username, email, password } = req.body;
+exports.signup = async function(req, res) {
+  const { username, email, password } = req.body;
   
   // check to see if password is invalid before hashing it
+  // I have to check it here because otherwise it will check
+  // the hashed password
   if(!password || password.length < 6) {
     return errorHandler(res, null, 400, 'Password must be at least 6 characters long');
   }
 
-  bcrypt.hash(password, 10, (error, hashedPassword) => {
-    if(error) {
-      return errorHandler(res, error, 400, 'Something went wrong');
-    }
-    User.create({ username, email, password: hashedPassword }, (error, user) => {
-      if(error) {
-        return errorHandler(res, error, 400, 'Something went wrong during signup');
-      };
-      res.json({
-        success: true,
-        message: 'Successfully created user',
-        user: {
-          id: _id,
-          email,
-          username,
-        },
-      });
-      return;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({ username, email, password: hashedPassword });
+
+    res.json({
+      success: true,
+      message: 'Account created',
+      redirect: '/login',
+      user: {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+      },
     });
-  });
+    return;
+  } catch(error) {
+    return errorHandler(res, error, 500, 'Something went wrong');
+  }
+
+  // bcrypt.hash(password, 10, (error, hashedPassword) => {
+  //   User.create({ username, email, password: hashedPassword }, (error, user) => {
+  //     if(error) {
+  //       return errorHandler(res, error, 400, 'Something went wrong during signup');
+  //     };
+  //     res.json({
+  //       success: true,
+  //       message: 'Account created',
+  //       redirect: '/login',
+  //       user: {
+  //         id: _id,
+  //         email,
+  //         username,
+  //       },
+  //     });
+  //     return;
+  //   });
+  // });
 }
 
 exports.login = async function(req, res) {
@@ -84,13 +103,14 @@ exports.login = async function(req, res) {
       username: user.username,
     }
 
-    jwt.sign({ payload }, process.env.JWT_SECRET_KEY, { expiresIn: '300s' }, (error, token) => {
+    jwt.sign({ payload }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' }, (error, token) => {
       if(error) {
         return errorHandler(res, error, 400, 'Something went wrong when signing token');
       }
       res.json({
         success: true,
-        message: 'Successfully logged in',
+        message: 'Logged in',
+        redirect: '/',
         user: payload,
         token,
       });

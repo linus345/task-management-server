@@ -3,6 +3,17 @@ const User = require('../models/user');
 const errorHandler = require('../handlers/errorHandler');
 
 exports.read = async function(req, res) {
+  const { id } = req.params;
+  
+  try {
+    const board = await Board.findById(id).populate('members');
+    res.json({ board });
+  } catch(error) {
+    return errorHandler(res, error, 404, 'Something went wrong when fetching board');
+  }
+}
+
+exports.readAll = async function(req, res) {
   const { _id } = req.user;
 
   try {
@@ -11,7 +22,7 @@ exports.read = async function(req, res) {
     res.json({ boards });
     return;
   } catch(error) {
-    return errorHandler(res, error, 400, 'Something went wrong when fetching boards');
+    return errorHandler(res, error, 404, 'Something went wrong when fetching boards');
   }
 }
 
@@ -28,14 +39,29 @@ exports.create = async function(req, res) {
       return errorHandler(res, error, 400, 'Something went wrong when creating board');
     };
 
-    User.findByIdAndUpdate(_id, {
+    // User.findByIdAndUpdate(_id, {
+    //  $push: { boards: newBoard._id } 
+    // }, error => {
+    //   if(error) {
+    //     return errorHandler(res, error, 400, 'Something went wrong when adding board to user');
+    //   }
+    //   res.json({
+    //     newBoard,
+    //     success: true,
+    //   });
+    //   return;
+    // });
+    User.updateMany({ $or: [
+      { _id: newBoard.owner },
+      { _id: { $in: newBoard.members } }
+    ]}, {
      $push: { boards: newBoard._id } 
     }, error => {
       if(error) {
         return errorHandler(res, error, 400, 'Something went wrong when adding board to user');
       }
       res.json({
-        newBoard,
+        board: newBoard,
         success: true,
       });
       return;

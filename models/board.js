@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const taskSchema = require('./task');
+const columnSchema = require('./column');
 
 const boardSchema = new Schema({
   owner: {
@@ -13,6 +14,7 @@ const boardSchema = new Schema({
     ref: 'User'
   }],
   tasks: [taskSchema],
+  columns: [columnSchema],
   label: {
     type: String,
     required: [true, 'Board must have a label'],

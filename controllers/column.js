@@ -2,20 +2,17 @@ const Board = require('../models/board');
 const errorHandler = require('../handlers/errorHandler');
 
 exports.create = async function(req, res) {
-  const { title } = req.body;
-  const { boardId, columnId } = req.params;
-  const { _id } = req.user;
+  const { name } = req.body;
+  const { boardId } = req.params;
 
-  // create the new task
-  const newTask = {
-    author: _id,
-    title,
-    column: columnId,
+  // create the new column
+  const newColumn = {
+    name,
   }
 
   try {
     const board = await Board.findById(boardId);
-    board.tasks.push(newTask);
+    board.columns.push(newColumn);
 
     board.save(error => {
       if(error) {
@@ -23,7 +20,7 @@ exports.create = async function(req, res) {
       }
       res.json({
         success: true,
-        message: 'Added task',
+        message: 'Added column',
       });
       return;
     });
@@ -33,17 +30,13 @@ exports.create = async function(req, res) {
 }
 
 exports.update = async function(req, res) {
-  const { title } = req.body;
-  const { boardId, columnId, taskId } = req.params;
+  const { name } = req.body;
+  const { boardId, columnId } = req.params;
   
   try {
     const board = await Board.findById(boardId);
-    const task = await board.tasks.id(taskId);
-    task.title = title;
-
-    if(task.column !== columnId) {
-      task.column = columnId;
-    }
+    const column = await board.columns.id(columnId);
+    column.name = name;
 
     board.save(error => {
       if(error) {
@@ -51,7 +44,7 @@ exports.update = async function(req, res) {
       }
       res.json({
         success: true,
-        message: 'Updated task',
+        message: 'Updated column',
       });
       return;
     });
@@ -61,12 +54,13 @@ exports.update = async function(req, res) {
 }
 
 exports.delete = async function(req, res) {
-  const { boardId, taskId } = req.params;
+  const { boardId, columnId } = req.params;
 
   try {
     const board = await Board.findById(boardId);
   
-    board.tasks.id(taskId).remove();
+    // may not return a promise
+    await board.columns.id(columnId).remove();
   
     board.save(error => {
       if(error) {
@@ -74,7 +68,7 @@ exports.delete = async function(req, res) {
       }
       res.json({
         success: true,
-        message: 'Deleted task',
+        message: 'Deleted column',
       });
       return;
     });
