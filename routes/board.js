@@ -39,6 +39,8 @@ router.delete('/:boardId/columns/:columnId', columnController.delete);
 //////////
 router.post('/:boardId/columns/:columnId/tasks', taskController.create);
 
+router.put('/:boardId/columns/:columnId/tasks', taskController.reorder);
+
 router.put('/:boardId/columns/:columnId/tasks/:taskId', taskController.update);
 
 router.delete('/:boardId/columns/:columnId/tasks/:taskId', taskController.delete);

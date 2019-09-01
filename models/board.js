@@ -13,7 +13,7 @@ const boardSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'User'
   }],
-  tasks: [taskSchema],
+  // tasks: [taskSchema],
   columns: [columnSchema],
   label: {
     type: String,

@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const columnSchema = require('./column');
 
 const taskSchema = new Schema({
   author: {
@@ -12,10 +11,11 @@ const taskSchema = new Schema({
     type: String,
     required: [true, 'Task must have a title'],
   },
-  column: {
-    type: Schema.Types.ObjectId,
-    required: [true, 'Task must be in a column'],
-  },
+  // ind: { type: Number, index: true },
+  // column: {
+  //   type: Schema.Types.ObjectId,
+  //   required: [true, 'Task must be in a column'],
+  // },
   // status: {
   //   type: String,
   //   enum: ['NOT STARTED', 'STARTED', 'DONE'],

@@ -92,7 +92,6 @@ async function seedBoards() {
           name: 'Done',
         },
       ],
-      tasks: [],
       // tasks: [
       //   {
       //     author: users[1]._id,
