@@ -33,7 +33,7 @@ exports.create = async function(req, res) {
       return;
     });
   } catch(error) {
-    return errorHandler(res, error, 400, 'Something went wrong');
+    return errorHandler(res, error, 400, 'Something went wrong when creating task');
   }
 }
 
@@ -43,18 +43,20 @@ exports.update = async function(req, res) {
   
   try {
     const board = await Board.findById(boardId);
-    const task = board.columns.forEach(async column => {
-      if(column._id === columnId) {
-        const temp = await column.tasks.id(taskId);
-        return temp;
+    // board.columns.forEach(async column => {
+    //   if('' + column._id === columnId) {
+    //     task = await column.tasks.id(taskId);
+    //     task.title = title;
+    //   }
+    // });
+    for(let i = 0; i < board.columns.length; i++) {
+      const column = board.columns[i];
+      if('' + column._id === columnId) {
+        task = await column.tasks.id(taskId);
+        task.title = title;
+        break;
       }
-    });
-    console.log('task update', task);
-    task.title = title;
-
-    // if(task.column !== columnId) {
-    //   task.column = columnId;
-    // }
+    }
 
     board.save(error => {
       if(error) {
@@ -67,7 +69,7 @@ exports.update = async function(req, res) {
       return;
     });
   } catch(error) {
-    return errorHandler(res, error, 400, 'Something went wrong');
+    return errorHandler(res, error, 400, 'Something went wrong when updating task');
   }
 }
 
@@ -96,45 +98,54 @@ exports.delete = async function(req, res) {
       return;
     });
   } catch(error) {
-    return errorHandler(res, error, 400, 'Something went wrong');
+    return errorHandler(res, error, 400, 'Something went wrong when deleting task');
   }
 }
 
 exports.reorder = async function(req, res) {
-  const { tasks } = req.body;
-  const { boardId, columnId } = req.params;
+  const { taskId, oldIndex, newIndex, sourceColumnId, destinationColumnId } = req.body;
+  const { boardId } = req.params;
 
   try {
     const board = await Board.findById(boardId);
-
-    // remove tasks
-    board.columns.forEach(async column => {
-      await column.tasks.remove();
-    })
-
-    // insert tasks in correct order
+    if(!board) throw new Error('No board found');
+    
+    let tempTask = undefined;
     board.columns.forEach(column => {
-      if(column._id === columnId) {
-        column.tasks = tasks;
-        break;
+      if('' + column._id === sourceColumnId) {
+        console.log('setting temptask');
+        console.log('temptask', column.tasks[oldIndex]);
+        tempTask = column.tasks[oldIndex];
+        console.log('after setting temptask');
+        column.tasks.pull(taskId);
+        console.log('after pulling task');
       }
-    })
+    });
 
-    // TODO: come up with a solution on how to update the order of tasks
-    // maybe delete and then insert
-    // upsert??
+    board.columns.forEach(column => {
+      console.log('second forEach');
+      if('' + column._id === destinationColumnId) {
+        console.log('before splicing');
+        column.tasks.splice(newIndex, 0, tempTask);
+        console.log('after splicing');
+      }
+    });
+
+    console.log('here');
+    console.log('temptask', tempTask);
 
     board.save(error => {
+      console.log('test');
       if(error) {
-        throw error;
+        throw new Error('this is the error');
       }
       res.json({
         success: true,
-        message: 'Deleted task',
+        message: 'Updated task order',
       });
       return;
     });
   } catch(error) {
-    return errorHandler(res, error, 400, 'Something went wrong');
+    return errorHandler(res, error, 400, 'Something went wrong when updating order');
   }
 }

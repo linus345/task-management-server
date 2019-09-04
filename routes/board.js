@@ -23,6 +23,16 @@ router.put('/:id', boardController.update);
 // delete board
 router.delete('/:id', boardController.delete);
 
+////////////
+// tasks //
+//////////
+router.post('/:boardId/columns/:columnId/tasks', taskController.create);
+
+router.put('/:boardId/columns/tasks', taskController.reorder);
+
+router.put('/:boardId/columns/:columnId/tasks/:taskId', taskController.update);
+
+router.delete('/:boardId/columns/:columnId/tasks/:taskId', taskController.delete);
 
 //////////////
 // columns //
@@ -34,15 +44,5 @@ router.put('/:boardId/columns/:columnId', columnController.update);
 router.delete('/:boardId/columns/:columnId', columnController.delete);
 
 
-////////////
-// tasks //
-//////////
-router.post('/:boardId/columns/:columnId/tasks', taskController.create);
-
-router.put('/:boardId/columns/:columnId/tasks', taskController.reorder);
-
-router.put('/:boardId/columns/:columnId/tasks/:taskId', taskController.update);
-
-router.delete('/:boardId/columns/:columnId/tasks/:taskId', taskController.delete);
 
 module.exports = router;
