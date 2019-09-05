@@ -14,10 +14,11 @@ exports.create = async function(req, res) {
 
   try {
     const board = await Board.findById(boardId);
-    // board.tasks.push(newTask);
+    let task = undefined;
     for(let i = 0; i < board.columns.length; i++) {
       if(board.columns[i]._id == columnId) {
         board.columns[i].tasks.push(newTask);
+        task = board.columns[i].tasks[board.columns[i].tasks.length -1];
         break;
       }
     }
@@ -29,6 +30,7 @@ exports.create = async function(req, res) {
       res.json({
         success: true,
         message: 'Added task',
+        task,
       });
       return;
     });
