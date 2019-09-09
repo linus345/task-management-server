@@ -21,6 +21,10 @@ const userSchema = new Schema({
     type: String,
     required: [true, 'Password is required'],
   },
+  lastLogout: {
+    type: Date,
+    default: Date.now,
+  },
   boards: [{ type: Schema.Types.ObjectId, ref: 'Board'}],
 });
 

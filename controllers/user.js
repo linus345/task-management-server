@@ -58,25 +58,6 @@ exports.signup = async function(req, res) {
   } catch(error) {
     return errorHandler(res, error, 500, 'Something went wrong');
   }
-
-  // bcrypt.hash(password, 10, (error, hashedPassword) => {
-  //   User.create({ username, email, password: hashedPassword }, (error, user) => {
-  //     if(error) {
-  //       return errorHandler(res, error, 400, 'Something went wrong during signup');
-  //     };
-  //     res.json({
-  //       success: true,
-  //       message: 'Account created',
-  //       redirect: '/login',
-  //       user: {
-  //         id: _id,
-  //         email,
-  //         username,
-  //       },
-  //     });
-  //     return;
-  //   });
-  // });
 }
 
 exports.login = async function(req, res) {
@@ -101,6 +82,7 @@ exports.login = async function(req, res) {
       _id: user._id,
       email: user.email,
       username: user.username,
+      lastLogout: user.lastLogout,
     }
 
     jwt.sign({ payload }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' }, (error, token) => {
@@ -119,5 +101,28 @@ exports.login = async function(req, res) {
 
   } catch(error) {
     return errorHandler(res, error, 400, 'Something went wrong during login');
+  }
+}
+
+exports.logout = async function(req, res){
+  try {
+    const user = await User.findById(req.user._id);
+    if(!user) throw new Error('No user found');
+    
+    // log out the user after setting lastLogout to Date.now
+    user.lastLogout = Date.now();
+    user.markModified('lastLogout');
+
+    await user.save({ validateBeforeSave: false });
+
+    req.user = null;
+    res.json({
+      success: true,
+      message: 'Logged out',
+      redirect: '/login',
+    });
+  } catch(error) {
+    console.log('error', error);
+    return errorHandler(res, error, 400, 'Something went wrong when logging out');
   }
 }

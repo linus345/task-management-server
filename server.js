@@ -17,7 +17,7 @@ db.on('error', console.error.bind(console, 'connection error:'));
 
 db.once('open', () => {
   console.log('Connected to database');
-  // seed the database with both users, boards and tasks
+  // seed the database with users, boards and tasks
   // seed.users(seed.boards);
   // seed the database with only users
   // seed.users();

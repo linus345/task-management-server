@@ -12,12 +12,26 @@ module.exports.isAuthenticated = function(req, res, next) {
     return errorHandler(res, null, 400, 'No authorization header present', '/login');
   }
   const bearerToken = bearerHeader.split(' ')[1];
-  jwt.verify(bearerToken, process.env.JWT_SECRET_KEY, (error, decoded) => {
+  jwt.verify(bearerToken, process.env.JWT_SECRET_KEY, async (error, decoded) => {
     if(error) {
       req.user = null;
       return errorHandler(res, error, 401, 'Invalid token', '/login');
     }
-    req.user = decoded.payload;
-    return next();
+    // get user
+    try {
+      const user = await User.findById(decoded.payload._id);
+      if(!user) throw new Error('Invalid token');
+      // check if valid
+      const lastLogout = new Date(decoded.payload.lastLogout);
+      if(user.lastLogout.getTime() === lastLogout.getTime()) {
+        // vaild
+        req.user = decoded.payload;
+        return next();
+      } else {
+        throw new Error('Token invalid due to logout');
+      }
+    } catch(error) {
+      return errorHandler(res, error, 404, 'Something went wrong when validating user', '/login');
+    }
   });
 }

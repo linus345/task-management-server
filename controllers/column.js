@@ -13,7 +13,7 @@ exports.create = async function(req, res) {
   try {
     const board = await Board.findById(boardId);
     board.columns.push(newColumn);
-
+    const lastColumn = board.columns[board.columns.length - 1];
     board.save(error => {
       if(error) {
         throw error;
@@ -21,6 +21,7 @@ exports.create = async function(req, res) {
       res.json({
         success: true,
         message: 'Added column',
+        column: lastColumn,
       });
       return;
     });
