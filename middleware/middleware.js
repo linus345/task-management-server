@@ -9,7 +9,7 @@ module.exports.isAuthenticated = function(req, res, next) {
   }
   const bearerHeader = req.get('Authorization');
   if(!bearerHeader) {
-    return errorHandler(res, null, 400, 'No authorization header present', '/login');
+    return errorHandler(res, null, 401, 'No authorization header present', '/login');
   }
   const bearerToken = bearerHeader.split(' ')[1];
   jwt.verify(bearerToken, process.env.JWT_SECRET_KEY, async (error, decoded) => {
@@ -31,7 +31,7 @@ module.exports.isAuthenticated = function(req, res, next) {
         throw new Error('Token invalid due to logout');
       }
     } catch(error) {
-      return errorHandler(res, error, 404, 'Something went wrong when validating user', '/login');
+      return errorHandler(res, error, 401, 'Something went wrong when validating user', '/login');
     }
   });
 }
